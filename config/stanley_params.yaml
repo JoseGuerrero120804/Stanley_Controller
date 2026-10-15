@@ -1,0 +1,39 @@
+stanley_controller:
+  ros__parameters:
+    use_sim_time: true
+    path_file: /home/nombre_usuario/stanley_waypoints.csv
+    odom_topic: /odom
+    cmd_vel_topic: /cmd_vel
+    log_file: /home/nombre_usuario/stanley_control_log.csv  # '' disables logging
+    control_rate: 20.0
+    search_window: 50
+    odom_timeout: 0.5
+    odom_is_front_axle: false  # /odom reports the rear axle -> project with L
+
+    # --- Step 3: Stanley lateral control ---
+    # delta = theta_e + arctan(k * e_ct / (k_s + v)), clipped to |delta| <= max_steering_angle
+    wheelbase: 2.7             # must match the AckermannSteering plugin (delta -> yaw rate)
+    stanley_gain: 1.0          # k
+    softening_gain: 1.0        # k_s (m/s)
+    # The Prius plugin cannot steer past atan(sin(0.5)) ~= 0.447 rad. The QCar spec uses 0.3.
+    max_steering_angle: 0.44
+    goal_tolerance: 0.3
+
+    # --- Target speed v_ref (slower through curves) ---
+    target_speed: 1.5          # m/s on straights
+    target_speed_curve: 1.0    # m/s on curves
+    curve_curvature_threshold: 0.1  # rad/m
+
+    # --- Step 2: longitudinal PID ---
+    # u = Kp*e + Ki*e_i + Kd*e_d (+ feedforward_gain * v_ref), clipped to [min_command, max_command]
+    # The Prius plugin tracks its velocity command almost ideally, so the derivative
+    # term only destabilises the loop here; keep Kd = 0 in simulation.
+    kp: 0.3
+    ki: 3.0
+    kd: 0.0
+    integral_limit: 5.0
+    derivative_filter_alpha: 0.7  # low-pass on the derivative (0 = no filter)
+    feedforward_gain: 0.0         # pure PID as specified; 1.0 adds v_ref feed-forward
+    # Safety saturation. QCar spec is [-0.5, 0.5] m/s; the Prius needs more headroom.
+    max_command: 3.0
+    min_command: -3.0

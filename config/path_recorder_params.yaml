@@ -1,0 +1,10 @@
+# Step 1: reference path recorded while teleoperating the car.
+path_recorder:
+  ros__parameters:
+    use_sim_time: true
+    odom_topic: /odom
+    output_file: /home/nombre_usuario/stanley_waypoints.csv
+    min_distance: 0.2        # 0.15 m <= delta_d <= 0.25 m, avoids waypoint crowding
+    max_jump_distance: 1.0   # stop recording if odometry jumps (sim reset)
+    record_front_axle: true  # store the front-axle trajectory (what Stanley tracks)
+    wheelbase: 2.7           # Prius AckermannSteering wheel_base (QCar: 0.256)

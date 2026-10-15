@@ -1,0 +1,13 @@
+# Step 1 (QCar sim): reference path recorded while teleoperating the car.
+path_recorder:
+  ros__parameters:
+    use_sim_time: true
+    odom_topic: /qcar_sim/odom
+    output_file: /home/nombre_usuario/qcar_stanley_waypoints.csv
+    min_distance: 0.15       # 0.15 m <= delta_d <= 0.25 m, avoids waypoint crowding
+    max_jump_distance: 1.0   # stop recording if odometry jumps (sim reset)
+    record_front_axle: true  # store the front-axle trajectory (what Stanley tracks)
+    wheelbase: 0.256
+    # /qcar_sim/odom reports base_footprint (chassis centre); the front axle is
+    # 0.1296 m ahead of it (qcar_description URDF), not a full wheelbase.
+    front_axle_offset: 0.1296

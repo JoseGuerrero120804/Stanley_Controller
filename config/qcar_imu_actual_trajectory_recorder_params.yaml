@@ -1,0 +1,10 @@
+# Executed trajectory of the physical QCar from imu_odometry, for evaluate_tracking.
+# Same reference point and spacing as ~/waypoints.csv (bag_to_waypoints.py).
+path_recorder:
+  ros__parameters:
+    use_sim_time: false
+    odom_topic: /qcar/imu_odom
+    output_file: /home/nombre_usuario/actual_trajectory.csv
+    min_distance: 0.05
+    max_jump_distance: 1.0
+    record_front_axle: false

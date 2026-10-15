@@ -1,0 +1,11 @@
+# Executed trajectory recorded during autonomous tracking, for evaluate_tracking.
+# Uses the same reference point (front axle) as the reference path.
+path_recorder:
+  ros__parameters:
+    use_sim_time: true
+    odom_topic: /odom
+    output_file: /home/nombre_usuario/stanley_actual_trajectory.csv
+    min_distance: 0.2
+    max_jump_distance: 1.0
+    record_front_axle: true
+    wheelbase: 2.7

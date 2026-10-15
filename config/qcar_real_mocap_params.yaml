@@ -1,0 +1,53 @@
+# Physical QCar 2, live pose from OptiTrack (Motive streaming the QCar_Red rigid body).
+# Reference path: ros2 run stanley_controller mocap_to_waypoints
+stanley_controller:
+  ros__parameters:
+    use_sim_time: false
+    path_file: /home/nombre_usuario/qcar_real_waypoints.csv
+    log_file: /home/nombre_usuario/qcar_real_control_log.csv  # '' disables logging
+    control_rate: 20.0
+    search_window: 50
+    odom_timeout: 0.5          # stop the car if no mocap pose for this long (s)
+
+    # --- Live pose: geometry_msgs/PoseStamped of the rigid body ---
+    pose_source: pose_stamped
+    pose_topic: /vrpn_mocap/QCar_Red/pose
+    # Check with `ros2 topic echo <pose_topic>` while the car sits on the floor:
+    # position.y ~ 0.17 m (marker height) -> Motive streams Y-up -> true
+    # position.z ~ 0.17 m                  -> Motive streams Z-up -> false
+    pose_y_up: true
+    # Rigid body +X axis vs. true car heading, printed by mocap_to_waypoints.
+    yaw_offset: -0.0603
+
+    # --- Speed feedback (tachometer) ---
+    speed_source: qcar_velocity
+    speed_topic: /qcar/velocity
+
+    # --- Commands: qcar2_interfaces/MotorCommands [steering_angle, motor_throttle] ---
+    command_mode: motor_commands
+    cmd_vel_topic: /qcar2_motor_speed_cmd
+    steering_sign: 1.0         # set -1.0 if a positive command steers the car RIGHT
+
+    # --- Step 3: Stanley lateral control ---
+    wheelbase: 0.256
+    front_axle_offset: 0.129   # rigid-body pivot (chassis centre) -> front axle
+    odom_is_front_axle: false
+    stanley_gain: 1.0          # k
+    softening_gain: 1.0        # k_s (m/s)
+    max_steering_angle: 0.5236 # +/- pi/6 (the recorded turns need ~0.34 rad)
+    goal_tolerance: 0.1
+
+    # --- Target speed v_ref (the reference run drove at ~0.43 m/s) ---
+    target_speed: 0.3
+    target_speed_curve: 0.2
+    curve_curvature_threshold: 0.8  # rad/m (recorded turns: R ~ 0.72 m -> 1.4 rad/m)
+
+    # --- Step 2: longitudinal PID ---
+    kp: 0.3
+    ki: 3.0
+    kd: 0.0
+    integral_limit: 1.0
+    derivative_filter_alpha: 0.7
+    feedforward_gain: 0.0
+    max_command: 0.5           # u in [-0.5, 0.5] m/s
+    min_command: -0.5

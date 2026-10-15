@@ -1,0 +1,40 @@
+stanley_controller:
+  ros__parameters:
+    use_sim_time: true
+    path_file: /home/nombre_usuario/qcar_stanley_waypoints.csv
+    odom_topic: /qcar_sim/odom
+    # qcar_gazebo vehicle_controller input: Vector3Stamped, x = u (m/s), y = delta (rad)
+    command_mode: qcar_sim
+    cmd_vel_topic: /qcar_sim/user_command
+    log_file: /home/nombre_usuario/qcar_stanley_control_log.csv  # '' disables logging
+    control_rate: 20.0
+    search_window: 50
+    odom_timeout: 0.5
+    odom_is_front_axle: false
+
+    # --- Step 3: Stanley lateral control ---
+    # delta = theta_e + arctan(k * e_ct / (k_s + v)), clipped to |delta| <= max_steering_angle
+    wheelbase: 0.256
+    front_axle_offset: 0.1296  # base_footprint (odom) -> front axle, from the URDF
+    stanley_gain: 1.0          # k
+    softening_gain: 1.0        # k_s (m/s)
+    max_steering_angle: 0.5236 # +/- pi/6 (vehicle_controller limit: 0.523)
+    goal_tolerance: 0.1
+
+    # --- Target speed v_ref (slower through curves) ---
+    # vehicle_controller clamps wheel speed to 0.446 m/s, keep v_ref below it.
+    target_speed: 0.3          # m/s on straights
+    target_speed_curve: 0.2    # m/s on curves
+    curve_curvature_threshold: 1.0  # rad/m (QCar curves are ~1 m radius)
+
+    # --- Step 2: longitudinal PID ---
+    # u = Kp*e + Ki*e_i + Kd*e_d (+ feedforward_gain * v_ref), clipped to [min_command, max_command]
+    kp: 0.3
+    ki: 3.0
+    kd: 0.0
+    integral_limit: 1.0
+    derivative_filter_alpha: 0.7
+    feedforward_gain: 0.0
+    # Safety saturation u in [-0.5, 0.5] m/s
+    max_command: 0.5
+    min_command: -0.5

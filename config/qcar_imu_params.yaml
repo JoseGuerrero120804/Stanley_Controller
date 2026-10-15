@@ -1,0 +1,69 @@
+# Physical QCar 2 following ~/waypoints.csv (made by bag_to_waypoints.py from the IMU bag).
+# Pose: imu_odometry (gyro z + /qcar/velocity), same integration as bag_to_waypoints.py,
+# starting at (0, 0, 0) like the waypoints -> place the car where the bag started.
+imu_odometry:
+  ros__parameters:
+    use_sim_time: false
+    heading_source: imu
+    path_file: /home/nombre_usuario/waypoints.csv  # start pose = first row
+    imu_topic: /qcar/imu
+    speed_topic: /qcar/velocity
+    speed_field: x             # vector.x, as bag_to_waypoints.py
+    yaw_sign: 1.0              # must match the --yaw-sign used for waypoints.csv
+    bias_window: 3.0           # s, keep the car still at start-up (gyro bias estimate)
+    odom_topic: /qcar/imu_odom
+    rear_axle_offset: 0.0      # publish the integrated point itself (waypoints frame)
+    publish_rate: 50.0
+    input_timeout: 0.5         # pause odometry (-> controller stops the car) if IMU or speed data stop
+
+stanley_controller:
+  ros__parameters:
+    use_sim_time: false
+    path_file: /home/nombre_usuario/waypoints.csv
+    # waypoints.csv holds the integrated (rear-axle) point + yaw -> shift to the front axle.
+    path_front_axle_offset: 0.256
+    log_file: /home/nombre_usuario/qcar_imu_control_log.csv  # '' disables logging
+    control_rate: 20.0
+    search_window: 50
+    odom_timeout: 0.5
+
+    # --- Pose and speed feedback from imu_odometry ---
+    pose_source: odom
+    odom_topic: /qcar/imu_odom
+    speed_source: odom         # odometry twist = /qcar/velocity vector.x
+
+    # --- Commands: Vector3Stamped on /qcar/user_command, x = throttle, y = steering ---
+    command_mode: user_command
+    cmd_vel_topic: /qcar/user_command
+    steering_sign: 1.0         # the bag confirms + steering = left turn
+
+    # --- Step 3: Stanley lateral control ---
+    wheelbase: 0.256
+    front_axle_offset: 0.256   # odometry point (rear axle) -> front axle
+    odom_is_front_axle: false
+    stanley_gain: 0.3          # k
+    softening_gain: 1.0        # k_s (m/s); 2.0 damps the weaving at low speed
+    max_steering_angle: 0.5236 # +/- pi/6
+    goal_tolerance: 0.1
+
+    # --- Target speed v_ref ---
+    # The bag shows ~2.2 s between a command and the car's reaction. Above ~0.2 m/s the
+    # car travels too far blind and Stanley oscillates; 0.15 m/s stays stable.
+    target_speed: 0.12         # m/s; slower = less ground covered during the ~2 s delay
+    target_speed_curve: 0.10
+    curve_curvature_threshold: 1.0
+
+    # --- Step 2: longitudinal PID ---
+    # u is the THROTTLE duty cycle of /qcar/user_command, not m/s
+    # (bag: 0.096 duty -> 0.46 m/s; the motor does not move below ~0.058).
+    # u = Kff*v_ref + Kp*e + Ki*e_i + Kd*e_d
+    kp: 0.03
+    ki: 0.03                   # lower -> the car sits stalled in curves much longer
+    kd: 0.0                    # keep 0: the ~2 s delay + noisy speed make D kick the throttle
+    integral_limit: 20.0
+    derivative_filter_alpha: 0.7
+    feedforward_gain: 0.26     # straights: the car moves with ~0.045 duty (Oct 14 runs)
+    # Safety: hard throttle cap. Oct 14: 0.057 -> 0.26 m/s, 0.09 -> 0.52 m/s on the car.
+    # 0.065 still lets it pull through tight curves but stops it from running away.
+    max_command: 0.065
+    min_command: 0.0           # no reverse
