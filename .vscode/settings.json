@@ -1,0 +1,25 @@
+{
+    "ROS2.distro": "jazzy",
+    "python.autoComplete.extraPaths": [
+        "/home/nombre_usuario/Workspaces/smart_movility_ws/build/vision_helpers_pkg",
+        "/home/nombre_usuario/Workspaces/smart_movility_ws/install/vision_helpers_pkg/lib/python3.12/site-packages",
+        "/home/nombre_usuario/Workspaces/smart_movility_ws/install/stanley_controller/lib/python3.12/site-packages",
+        "/home/nombre_usuario/Workspaces/smart_movility_ws/install/qcar2_interfaces/lib/python3.12/site-packages",
+        "/home/nombre_usuario/Workspaces/smart_movility_ws/build/pure_pursuit",
+        "/home/nombre_usuario/Workspaces/smart_movility_ws/install/pure_pursuit/lib/python3.12/site-packages",
+        "/home/nombre_usuario/Workspaces/smart_movility_ws/build/control_helpers_pkg",
+        "/home/nombre_usuario/Workspaces/smart_movility_ws/install/control_helpers_pkg/lib/python3.12/site-packages",
+        "/opt/ros/jazzy/lib/python3.12/site-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/nombre_usuario/Workspaces/smart_movility_ws/build/vision_helpers_pkg",
+        "/home/nombre_usuario/Workspaces/smart_movility_ws/install/vision_helpers_pkg/lib/python3.12/site-packages",
+        "/home/nombre_usuario/Workspaces/smart_movility_ws/install/stanley_controller/lib/python3.12/site-packages",
+        "/home/nombre_usuario/Workspaces/smart_movility_ws/install/qcar2_interfaces/lib/python3.12/site-packages",
+        "/home/nombre_usuario/Workspaces/smart_movility_ws/build/pure_pursuit",
+        "/home/nombre_usuario/Workspaces/smart_movility_ws/install/pure_pursuit/lib/python3.12/site-packages",
+        "/home/nombre_usuario/Workspaces/smart_movility_ws/build/control_helpers_pkg",
+        "/home/nombre_usuario/Workspaces/smart_movility_ws/install/control_helpers_pkg/lib/python3.12/site-packages",
+        "/opt/ros/jazzy/lib/python3.12/site-packages"
+    ]
+}
