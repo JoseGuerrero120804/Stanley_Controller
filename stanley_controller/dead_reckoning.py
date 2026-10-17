@@ -11,6 +11,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import Imu
 
 from stanley_controller.geometry import normalize_angle
+from stanley_controller.imu_integration import ImuIntegrator
 
 
 class DeadReckoning(Node):
@@ -76,11 +77,10 @@ class DeadReckoning(Node):
         self._yaw_rate = 0.0
         self._last_time = None
 
-        # IMU mode: gyro bias from the samples taken while the car is still.
-        self._bias = None
-        self._bias_samples = []
-        self._bias_start = None
-        self._last_imu = None  # (t, wz, v)
+        # IMU mode: same integration as imu_waypoint_recorder (shared class), on
+        # the rear axle; the gyro bias is estimated while the car is still.
+        self._imu = ImuIntegrator(self._x, self._y, self._theta, self.yaw_sign,
+                                  self.bias_window)
         self._last_speed_rx = None
         self._last_imu_rx = None
 
@@ -130,40 +130,16 @@ class DeadReckoning(Node):
         t = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
         if t == 0.0:
             t = self.get_clock().now().nanoseconds * 1e-9
-        wz = msg.angular_velocity.z
-        v = self._speed
-
-        if self._bias is None:
-            if self._bias_start is None:
-                self._bias_start = t
-            if abs(v) < 0.02:
-                self._bias_samples.append(wz)
-            if t - self._bias_start >= self.bias_window:
-                if len(self._bias_samples) >= 10:
-                    self._bias = sum(self._bias_samples) / len(self._bias_samples)
-                    self.get_logger().info(
-                        f'Gyro bias {self._bias:.5f} rad/s from {len(self._bias_samples)} '
-                        'samples. Publishing odometry.')
-                else:
-                    self._bias = 0.0
-                    self.get_logger().warn('The car was moving during the bias window; '
-                                           'gyro bias not corrected.')
-            self._last_imu = (t, wz, v)
-            return
-
-        # Trapezoidal integration between consecutive IMU samples (as bag_to_waypoints.py).
-        t0, wz0, v0 = self._last_imu
-        self._last_imu = (t, wz, v)
-        dt = t - t0
-        if dt <= 0.0 or dt > 0.5:
-            return
-        w = self.yaw_sign * (0.5 * (wz + wz0) - self._bias)
-        vm = 0.5 * (v + v0)
-        yaw_mid = self._theta + 0.5 * w * dt
-        self._theta = normalize_angle(self._theta + w * dt)
-        self._x += vm * math.cos(yaw_mid) * dt
-        self._y += vm * math.sin(yaw_mid) * dt
-        self._yaw_rate = w
+        event = self._imu.update(t, msg.angular_velocity.z, self._speed)
+        if event == 'bias_ready':
+            self.get_logger().info(
+                f'Gyro bias {self._imu.bias:.5f} rad/s from {self._imu.bias_samples} '
+                'samples. Publishing odometry.')
+        elif event == 'bias_failed':
+            self.get_logger().warn('The car was moving during the bias window; '
+                                   'gyro bias not corrected.')
+        self._x, self._y, self._theta = self._imu.x, self._imu.y, self._imu.theta
+        self._yaw_rate = self._imu.yaw_rate
 
     def _inputs_stale(self, now):
         stale = []
@@ -186,7 +162,7 @@ class DeadReckoning(Node):
             self._last_time = None
             return
         if self.heading_source == 'imu':
-            if self._bias is None:
+            if not self._imu.ready:
                 return  # no odometry until the gyro bias is known
         else:
             dt = 0.0 if self._last_time is None \

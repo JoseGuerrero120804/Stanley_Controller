@@ -36,6 +36,7 @@ stanley_controller:
     command_mode: user_command
     cmd_vel_topic: /qcar/user_command
     steering_sign: 1.0         # the bag confirms + steering = left turn
+    steering_trim: 0.077       # rad (~5 deg): front-left wheel pulls LEFT; every command is shifted right by this
 
     # --- Step 3: Stanley lateral control ---
     wheelbase: 0.256
@@ -60,10 +61,10 @@ stanley_controller:
     kp: 0.03
     ki: 0.03                   # lower -> the car sits stalled in curves much longer
     kd: 0.0                    # keep 0: the ~2 s delay + noisy speed make D kick the throttle
-    integral_limit: 20.0
+    integral_limit: 20.0   #Valor anterior fue 20
     derivative_filter_alpha: 0.7
-    feedforward_gain: 0.26     # straights: the car moves with ~0.045 duty (Oct 14 runs)
+    feedforward_gain: 0.36     # straights: the car moves with ~0.045 duty (Oct 14 runs)
     # Safety: hard throttle cap. Oct 14: 0.057 -> 0.26 m/s, 0.09 -> 0.52 m/s on the car.
     # 0.065 still lets it pull through tight curves but stops it from running away.
-    max_command: 0.065
+    max_command: 0.07
     min_command: 0.0           # no reverse

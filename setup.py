@@ -36,6 +36,7 @@ setup(
             'qcar_teleop_bridge = stanley_controller.qcar_teleop_bridge:main',
             'mocap_to_waypoints = stanley_controller.mocap_to_waypoints:main',
             'dead_reckoning = stanley_controller.dead_reckoning:main',
+            'imu_waypoint_recorder = stanley_controller.imu_waypoint_recorder:main',
         ],
     },
 )

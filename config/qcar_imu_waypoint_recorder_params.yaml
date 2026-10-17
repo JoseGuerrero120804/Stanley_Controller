@@ -1,0 +1,16 @@
+# Record a new reference path on the physical QCar (IMU + tachometer).
+# The car's pose when the gyro bias is ready becomes the origin (0, 0, 0).
+# Keep yaw_sign, speed_field and bias_window equal to imu_odometry in qcar_imu_params.yaml.
+imu_waypoint_recorder:
+  ros__parameters:
+    use_sim_time: false
+    imu_topic: /qcar/imu
+    speed_topic: /qcar/velocity
+    speed_field: x             # vector.x, as imu_odometry / bag_to_waypoints.py
+    yaw_sign: 1.0              # must match imu_odometry
+    bias_window: 3.0           # s, car STILL at start-up
+    min_distance: 0.05         # m between waypoints (same spacing as the old waypoints.csv)
+    output_file: /home/nombre_usuario/waypoints.csv   # an existing file is renamed to *_backup_<time>.csv
+    plot_file: /home/nombre_usuario/waypoints.png
+    odom_topic: /qcar/waypoint_recorder/odom          # live pose, for checking while driving
+    input_timeout: 0.5

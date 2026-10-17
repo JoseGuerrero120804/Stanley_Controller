@@ -90,13 +90,13 @@ def main():
                     '(cross-track error overall and curve vs straight, overlay plot), and '
                     'optionally plot the controller log.'
     )
-    parser.add_argument('--reference', default=os.path.join(home, 'stanley_waypoints.csv'),
+    parser.add_argument('--reference', default=os.path.join(home, 'waypoints.csv'),
                         help='Reference path CSV (from path_recorder during teleop).')
     parser.add_argument('--actual',
-                        default=os.path.join(home, 'stanley_actual_trajectory.csv'),
+                        default=os.path.join(home, 'actual_trajectory.csv'),
                         help='Executed trajectory CSV (path_recorder during tracking), '
                              'or the controller log (uses its x_front, y_front).')
-    parser.add_argument('--log', default=os.path.join(home, 'stanley_control_log.csv'),
+    parser.add_argument('--log', default=os.path.join(home, 'qcar_imu_control_log.csv'),
                         help='Controller log CSV (log_file param); skipped if missing.')
     parser.add_argument('--output', default=os.path.join(home, 'stanley_comparison.png'),
                         help='Output path for the overlay plot.')
